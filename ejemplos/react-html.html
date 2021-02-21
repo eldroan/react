@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>React</title>
+  </head>
+  <body>
+    <h2>React</h2>
+    <p>Este es un ejemplo de como react no es más que una librería y que alcanza solo con referenciarla.</p>
+    <p>En este caso estamos cargando desde script tags a una página html.</p>
+
+
+    <div style="border: 1px solid black;">
+      React es divertido.
+      <div class="like_button_container" data-commentid="1"></div>
+    </div>
+
+    <br/>
+
+    <div style="border: 1px solid black;">
+      React NO es un framework.
+      <div class="like_button_container" data-commentid="2"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    
+    <!-- Nuestro componente de react (por favor nunca hagan esto así fuera de ejemplos, hay mejores maneras) -->
+    <script>
+        "use strict";
+
+        const e = React.createElement;
+        const useState = React.useState;
+
+        const LikeButton = ({commentID}) => {
+        const [liked, setLiked] = useState(false);
+        if (liked) return "Te gusto el comentario número " + commentID;
+        return e(
+            'button',
+            { onClick: () => setLiked(true)},
+            'Me Gusta!'
+        );
+        };
+
+        // Buscamos todos los elementos de clase like_button_container y le agregamos nuestro componente  
+        document.querySelectorAll('.like_button_container')
+        .forEach(domContainer => {
+            // leemos el atributo data-* buscando commentid.
+            const commentID = parseInt(domContainer.dataset.commentid, 10);
+            ReactDOM.render(
+            e(LikeButton, { commentID: commentID }),
+            domContainer
+            );
+        });
+    </script>
+  </body>
+</html>
