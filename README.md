@@ -220,4 +220,4 @@ ReactDOM.render(<App/>, document.getElementById("root"));
 ```
 > [Componentes en Componentes - CODEPEN](https://codepen.io/leandamarill/pen/RwoLGZa) 
 
-![Componentes en Componentes](imagenes/componentes-en-Componentes.png)
+![Componentes en Componentes](imagenes/componentes-en-componentes.png)
