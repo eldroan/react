@@ -16,7 +16,7 @@ En su forma mas simple podemos utilizar react en una página html a través de t
 > NOTA: El código fuente se puede ver [acá](ejemplos/react-html.html), tambien podés mirarlo en vivo en [CODEPEN](https://codepen.io/leandamarill/pen/poNWgmQ). Este  ejemplo se basa en el expuesto en la documentación sobre [como agregar react a un sitio existente](https://reactjs.org/docs/add-react-to-a-website.html#add-react-in-one-minute)
 
 ## JSX
-Llegamos a nuestro primer `extra` de React. JSX significa JavaScript XML, su trabajo es producir 'elementos de React' que nos permite renderizarlos y colocarlos en el DOM de manera más sencilla. 
+Llegamos a nuestro primer `extra` de React. JSX significa JavaScript XML, su trabajo es producir 'elementos de React' que nos permite renderizarlos y colocarlos en el DOM de manera más sencilla.
 
 Podríamos considerarlo como [azúcar sintáctico](https://es.wikipedia.org/wiki/Az%C3%BAcar_sint%C3%A1ctico) para no utilizar alguna de las funciones de react directamente.
 
@@ -115,14 +115,109 @@ Uno de estos pre-procesadores es `Babel` que es capaz de convertir nuestro codig
 
 Algo a aclarar es que durante el cursado no configuraremos nada relacionado a babel ya que las herramientes utilizadas lo hacen por nosotros.
 
+## Elementos de React
+Los elementos son los bloques mas pequeños que componen aplicaciones React. Describen lo que uno quiere ver en la vista
+
+```js
+const element = <h1>Hello, world</h1>;
+```
+
+A diferencia de los elementos del DOM del browser, los elementos de React son objetos. React DOM se encarga de actualizar el DOM real para que refleje los elementos de React.
+
+### React DOM vs DOM real
+Al concepto de DOM (Document Object Model) estándar que representa los documentos HTML, react suma su propia abstracción del DOM conocida como DOM Virtual o VDOM.
+
+Lo importante a destacar es que React **solo actualiza lo que es necesario**. Para lograr esto, ante un cambio, compara los elementos y los hijos del estado anterior del DOM y solo actualiza aquellos elementos necesarios para que lograr el nuevo estado deseado. 
+
+> Los detalles de implementación no son necesarios para el cursado pero pueden verse [en la documentación](https://es.reactjs.org/docs/faq-internals.html#what-is-the-virtual-dom) para aquellos interesados.
+
 ## Componentes
 
 Ya hemos mencionado un par de veces la palabra `componentes`, esto se debe a que en React definimos nuestras vistas con una estrategia basada en componentes encapsulados que manejan su propio estado interno que se utilizan en conjunto para construir interfaces graficas complejas. 
 
 Un componente no es mas qué una clase o función de JavaScript que acepta entradas o propiedades (o `props` como se suele abreviar) y retorna un elemento de React que describe como una sección de la interfaz gráfica debería verse.
 
-Existen dos tipos de componentes
+Existen dos formas de declarar componentes
 - Componente funcional
-- Compoennete de clase
+    ```js
+    // Como función tradicional
+    function Welcome(props) {
+        return <h1>Hola, {props.name}</h1>;
+    }
 
-//TODO
+    // Como función flecha (Javascript ES6)
+    const Welcome = props => <h1>Hola, {props.name}</h1>;
+    ```
+- Componente de clase
+    ```js
+    // Clase (Javascript ES6)
+    class Welcome extends React.Component {
+        render() {
+            return <h1>Hola, {this.props.name}</h1>;
+        }
+    }
+    ```
+
+Si bien ambos componentes son equivalentes desde el punto de vista de React, desde la introducción de [hooks en React 16.8](https://es.reactjs.org/docs/hooks-intro.html) se recomienda escribir componentes funcionales ya que suele resultar en código más conciso y legible.
+
+### Renderizado de componentes
+
+Anteriormente vimos elementos de react que representaban tags HTML.
+
+```JS
+const element = <div />;
+```
+
+Nuestros componentes de React también pueden ser representados por elementos de la siguiente manera.
+
+```js
+const nombre = "Juan";
+const element = <Welcome name={nombre} />;
+```
+> [Componente de React - CODEPEN](https://codepen.io/leandamarill/pen/BaQwLpp)  
+
+Si prestamos atención `Welcome` es el componente que definimos anteriormente.
+
+React necesita distinguir entre los elementos nativos y los que definimos nostros para saber como renderizarlos y con ese fin nos impone la siguiente regla
+
+```
+Los nombres de todos los componentes de React deben comenzar con mayúscula.
+```
+> Si no respetamos esta regla encontraremos varios errores ya que React asumirá que queremos renderizar elementos nativos.
+
+Ademas, el componente `Welcome` esta recibiendo `name` como parte de sus props, estas props nos ayudan a indicarle al componente que hacer y como verse lo que nos da mucha flexibilidad para diseñar componentes que puedan ser reutilizables en multiples lugares de nuestra aplicación.
+
+### Reusando componentes
+
+Es importante escribir nuestros componentes de manera que podamos reutilizarlos desde otros. Recordemos que una de los pilares mas importantes de React es el de construir interfaces complejas a travez de la composición de elementos simples.
+
+```js
+const Welcome = (props) => <h1>Hola, {props.name}</h1>;
+
+const App = () => {
+  const nombres = [
+    "Juan",
+    "Marta",
+    "Cristina",
+    "Pedro",
+    "Luciana",
+    "Ricardo",
+    "Leopoldo",
+    "Magalí"
+  ];
+
+  return (
+    <div>
+      <h1>Saludos para todos!</h1>
+      <br/>
+      {nombres.map(nombre => <Welcome name={nombre}/>)}
+    </div>
+  );
+};
+
+
+ReactDOM.render(<App/>, document.getElementById("root"));
+```
+> [Componentes en Componentes - CODEPEN](https://codepen.io/leandamarill/pen/RwoLGZa) 
+
+![Componentes en Componentes](imagenes/componentes-en-Componentes.png)
