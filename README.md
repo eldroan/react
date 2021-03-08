@@ -304,13 +304,11 @@ Esto asegura que un componente padre pueda enviar parametros por props a sus com
 
 Si bien un componente no puede modificar los props que recibe, todo componente puede definir su propio estado interno. Este estado interno puede luego utilizarlo para saber como renderizarse o para pasarselo por props a algun componente hijo que posea (los cuales no podran modificarlos, ya que sera parte de las props que recibe).
 
-#### ¿Cuál es la diferencia entre state y props?
+> **¿Cuál es la diferencia entre state y props?**
+>
+> Props (abreviatura de ”properties”) y state son objetos planos de JavaScript. Mientras ambos contienen información que influye en el resultado del render, son diferentes debido a una importante razón: props se pasa al componente (similar a los parámetros de una función) mientras que state se administra dentro del componente (similar a las variables declaradas dentro de una función) - Extraido de la [documentación de react](https://es.reactjs.org/docs/faq-state.html#what-is-the-difference-between-state-and-props).
 
-> Extraido de la [documentación de react](https://es.reactjs.org/docs/faq-state.html#what-is-the-difference-between-state-and-props)
-
-props (abreviatura de ”properties”) y state son objetos planos de JavaScript. Mientras ambos contienen información que influye en el resultado del render, son diferentes debido a una importante razón: props se pasa al componente (similar a los parámetros de una función) mientras que state se administra dentro del componente (similar a las variables declaradas dentro de una función).
-
-> NOTA: Antes de la introducción de hooks en React 16.8 la única forma de construir componentes con estado interno (o state) era mediente componentes de clase. Ahora podemos hacerlos incluso desde componentes funcionales.
+Antes de la introducción de hooks en React 16.8 la única forma de construir componentes con estado interno (o state) era mediente componentes de clase. Ahora podemos hacerlos incluso desde componentes funcionales.
 
 La forma de definir estado en un componente funcional es a travez del hook `useState` importandolo desde la librería de react.
 
