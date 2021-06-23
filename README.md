@@ -1,7 +1,7 @@
 # React
 
 > NOTA: A lo largo de este escrito va a haber ejemplos con referencias a 'codepen'. Codepen es una herramienta para compartir fragmentos de código, al acceder a los ejemplos con estos links, vas a poder ver y modificar el código, y ademas, los efectos de los cambios casi instantaneamente desde tu navegador.
-
+---
 ## ¿Qué es React?
 
 Según el [sitio oficial](https://reactjs.org/):
@@ -19,7 +19,7 @@ En su forma mas simple podemos utilizar react en una página html a través de t
 ![Ejemplo de react en html](imagenes/react-html.gif)
 
 > NOTA: El código fuente se puede ver [acá](ejemplos/react-html.html), tambien podés mirarlo en vivo en [CODEPEN](https://codepen.io/leandamarill/pen/poNWgmQ). Este ejemplo se basa en el expuesto en la documentación sobre [como agregar react a un sitio existente](https://reactjs.org/docs/add-react-to-a-website.html#add-react-in-one-minute)
-
+---
 ## JSX
 
 Llegamos a nuestro primer `extra` de React. JSX significa JavaScript XML, su trabajo es producir 'elementos de React' que nos permite renderizarlos y colocarlos en el DOM de manera más sencilla.
@@ -338,9 +338,265 @@ function Contador() {
   );
 }
 ```
-
-![contador](imagenes/contador.gif)
+%%
+![contador](imagenes/contador.gif)%%
 
 > [Contador - CODEPEN](https://codepen.io/leandamarill/pen/qBqJBVM)
 
-<!-- ### El hook de useEffect en componentes -->
+### El hook de useEffect en componentes
+> Al final de la explicación hay un 'machete' para uso cotidiano
+
+#### Explicación
+
+Este hook es uno de los mas importantes, lamenteablemente la definición no es lo más sencillo de explicar sin entrar a explicar la vieja api de clases y métodos de ciclo de vida.
+
+La definición de react dice:
+
+```
+El Hook useEffect te permite llevar a cabo "efectos secundarios" en componentes funcionales
+```
+
+Los `efectos secundarios` son todas aquellas operaciones que no pueden realizarse durante el renderizado como suscripciones/desuscripciones de eventos o recuperar datos de internet cuando se carga nuestro componente o un valor de interés se modifica.
+
+Al usar este Hook, le estamos indicando a React que el componente tiene que hacer algo después de renderizarse. React recordará la función que le hemos pasado (nos referiremos a ella como nuestro “efecto”), y la llamará más tarde después de actualizar el DOM. 
+
+Por defecto se ejecuta después del primer renderizado y después de cada actualización. La api nos permite modificar este comportamiento utilizando un _array de dependencias_ que explicaremos luego.
+
+
+La forma de definir un effecto en un componente funcional es a travez del hook `useEffect` importandolo desde la librería de react. Este recibe como primer argumento una función que contiene nuestro efecto
+
+```js
+import React, { useState } from "react";
+
+useState(() => {
+ // nuestro codigo a ejecutar
+});
+```
+
+Esto permite que podamos acceder al estado del componente de forma transparente. En este caso la función alert se ejecutará luego de cada renderizado.
+
+```js
+import React, { useState } from "react";
+
+// Ejemplo de componente
+function Contador() {
+  const [contador, setContador] = useState(0);
+  
+  useEffect(()=>{
+  // Alert abre una ventana del navegador con nuestro mensaje
+   alert(`Actualmente me han clickeado ${contador} veces`)
+  });
+  
+  // Resto del componente...
+}
+
+```
+> [Contador - useEffect sin deps - CODEPEN](https://codepen.io/leandamarill/pen/wvJLBJd)
+
+Al definir nuestro efectos también podemos opcionalmente definir como hacer **cleanup** (o limpieza) haciendo que nuestro efecto retorne una segunda función que se ejecutará para realizar este comportamiento. 
+
+Este tipo de efectos es muy comun utilizarlos cuando nos suscribimos a algun evento y queremos asegurarnos de desuscribirnos cuando ya no sea necesario.
+
+##### Ejemplo de cleanup
+Partiendo de nuestro código anterior que muestra un alert en cada click. Si quisieramos esperar un **1 segundo** desde la ultima vez quese apreto el botón antes de mostrar el mensaje podríamos arrancar de la siguiente manera.
+
+Envolviendo la llamada de `alert`  utilizando  `setTimeout` 
+
+```js
+  useEffect(() => {
+    setTimeout(() => {
+      alert(`Actualmente me han clickeado ${contador} veces`);
+    }, 1000);
+  });
+```
+
+Ahora, si apretamos muchas veces el botón de incrementar el contador veremos que luego de un segundo empiezan a abrirse multiples ventanas de alerta.
+
+> [Contador - useEffect sin deps con setTimeout - CODEPEN](https://codepen.io/leandamarill/pen/wvJLaVb)
+
+Esto sucede porque con cada vez que presionamos el botón estamos creando un nuevo timeout y no estamos **limpiando** el anterior. 
+
+En realidad, la api del browser `setTimeout` devuelve el id del timeout que se creo y también existe una api `clearTimeout(timeoutID)` que podemos utilizar para limpiarlo. 
+
+Refactorizando nuestro effect para usar cleanup entonces obtendríamos
+
+```js
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      alert(`Actualmente me han clickeado ${contador} veces`);
+    }, 1000);
+	
+	return () => {
+      clearTimeout(timeout);
+	}
+  });
+```
+
+Ahora podemos presionar muchas veces el botón de incrementar el contador pero el mensaje de alerta no aparecerá hasta sino hásta luego de 1 segundo de que dejemos de presionar. Esto sucede porque antes de crear el nuevo timeout, estamos ejecutando `clearTimeout` en el anterior.
+
+[Contador - useEffect sin deps con setTimeout y cleanup - CODEPEN](https://codepen.io/leandamarill/pen/JjWQYXM)
+
+
+
+##### Ejecutando nuestro efecto de forma selectiva
+
+Hasta ahora menciónamos los efectos con y sin cleanup después de cada actualización. En algunos casos, ejecutar el cleanup o aplicar el efecto después de cada renderizado puede crear problemas de rendimiento.
+
+Este requerimiento es tan común que está incorporado en la API del _Hook_ `useEffect`. Puedes indicarle a React que _omita_ aplicar un efecto si ciertos valores no han cambiado entre renderizados. Para hacerlo, pasa un array como segundo argumento opcional a `useEffect`:
+
+```js
+// Solo ejecutamos este efecto si contador se modificó
+useEffect(()=>{
+	alert(`Actualmente me han clickeado ${contador} veces`)
+},[contador]);
+```
+
+> **TIP**
+>
+> A veces queremos que un efecto se ejecute solo una vez, al montarse el componente y su limpieza se ejecute al momento de desmontarse. Para estos casos podemos usar un array vacio como dependencias.
+> ```js
+> useEffect(()=>{
+>	// Ejecuta cuando monta
+>	return ()=> {
+>	  // Ejecuta cuando desmonta (opcional)
+>	}
+>},[]);
+>```
+
+###### Ejemplo de dependencias en nuestros efectos
+
+Imaginemos un segundo contador con su correspondiente botón para incrementarlo. Si miramos la siguiente interfaz y su codigo podría ser similar a lo siguiente.
+
+![ui de ejemplo](imagenes/dos-contadores.png)
+
+```js
+function Contadores() {
+  const [contador, setContador] = useState(0);
+  const [segundoContador, setSegundoContador] = useState(0);
+
+  useEffect(() => {
+    alert(`El valor del primer contador: es ${contador}`);
+  });
+
+  return (
+    <div>
+      <h1>Dos contadores en react!</h1>
+      <p>El primer contador sido clickeado {contador} veces</p>
+      <button onClick={() => setContador(contador + 1)}>
+        Incrementar Primer Contador
+      </button>
+      <p>El segundo contador ha sido clickeado {segundoContador} veces</p>
+      <button onClick={() => setSegundoContador(segundoContador + 1)}>
+        Incrementar Segundo Contador
+      </button>
+      <br />
+    </div>
+  );
+}
+```
+
+> [Dos contadores - useEffect sin deps - CODEPEN](https://codepen.io/leandamarill/pen/QWpXjzG)
+
+Observemos que si no hacemos ningun otro cambio, cualquiera de los dos botones modificará el state de nuestro componente, lo cual hará que se re-renderice y que luego ejecute una llamada a nuestro `useEffect` que muestra una alerta con el valor de `contador` el cual para los casos de haber apretado el **segundoContador** será el mismo valor. 
+
+Muchas veces este no es el comportamiento deseado. imaginemos un campo de busqueda que al tipear caracteres hacen una consulta a backend para traer resultados, si el contenido del campo no cambio podríamos evitar volver a hacer esta consulta.
+
+Para esto existe el segundo parametro opcional de `useEffect`, si modificamos la llamada del hook a la forma
+
+```js
+  useEffect(() => {
+    alert(`El valor del primer contador: es ${contador}`);
+  },[contador]);
+```
+
+Ahora efecto solo se ejecutará para los casos que `contador` se haya modificado sin importar lo que pase con `segundoContador`.
+
+> [Dos contadores - useEffect CON deps - CODEPEN](https://codepen.io/leandamarill/pen/NWpZxPd)
+
+
+#### Machete useEffect
+
+Algunos usos comunes de este hook son los siguientes (recordar que en cada caso podriamos retornar una función)
+
+```js
+// Ejecutar luego de cada re-render
+useEffect(() => {
+  // ...
+  // Opcional: return función de cleanup
+});
+
+// Ejecutar luego de cada re-render si el valor 'miVariable' se modificó
+const [miVariable, setMiVariable] = setState(null);
+useEffect(() => {
+  // ...
+  // Opcional: return función de cleanup
+},[miVariable]);
+
+// Ejecutar luego de cada re-render si el valor 'miVariable' o 'miOtraVariable' se modificó
+const [miVariable, setMiVariable] = setState(null);
+const [miOtraVariable, setMiOtraVariable] = setState(null);
+useEffect(() => {
+  // ...
+  // Opcional: return función de cleanup
+},[miVariable, miOtraVariable]);
+
+// Ejecutar una vez cuando se monta el componente
+const [miVariable, setMiVariable] = setState(null);
+useEffect(() => {
+  // ...
+  // Opcional: return función de cleanup que se ejecuta cuando se desmonta el componente
+},[]);
+
+
+```
+
+
+### Pensando en React
+
+Una de las grandes ventajas de React es cómo te hace pensar acerca de la aplicación mientras la construyes.
+
+La documentación hace bastante incapié en algunas 'reglas de mano' para escribir aplicaciones react, a continuación haremos un breve resumen de dos puntos de la [publicacion completa](https://es.reactjs.org/docs/thinking-in-react.html).
+
+##### Dividir la interfaz de usuario en una jerarquía de componentes
+Nuestras UIs en react deben ser pensada como un conjunto de pequeños componentes reusables que componen nuestras pantallas. Los componentes pequeños son faciles de debuggear y de escribir test unitarios.
+
+Para saber que debería ser su propio componente una buena técnica es basarse el principio de **responsabilidad única** esto significa que un componente debe, idealmente, hacer solo una cosa. Si termina creciendo entonces debería ser dividido en componentes más pequeños.
+
+##### Identificar dónde debe vivir el estado
+
+En React se trata de usar un flujo de datos en un sentido descendiente. Para esto buscamos respetar lo siguiente
+- El estado de un componente, si no necesita ser accedido por un componente hermano, debe ser parte de el.
+- Si un componente hijo necesita un valor que es parte del estado de un componente más arriba de la jerarquía deberá recibirlo por props.
+- Si dos componentes hermanos necesitan acceder al mismo valor este debería ser parte del estado de un componente común a estos más arriba en la jerarquía, el cual les proporciona acceso al valor mediante props (esto se conoce como [levantar el estado](https://es.reactjs.org/docs/lifting-state-up.html)).
+
+Puede que no sea inmediatamente obvio cuál componente debería poseer el estado. **Esta es normalmente la parte más complicada para quienes están arrancando con React**
+
+## Next.js como framework para React
+
+Hasta ahora estuvimos utilizando React accediendo a las librerias mediante una referencia a la cdn con el código, si bien para nuestros ejemplos fue suficiente no es la mejor solución para crear una aplicación completa con React desde cero.
+
+Una alternativa sería configurar nuestro propio proyecto de npm, utilizando algun bundler como **webpack** y transformando nuestro código con **Babel**.
+
+La otra opción es apoyarse en alguna herramienta para generar nuestro proyecto de React como [create-react-app](https://create-react-app.dev/), [gatsby](https://www.gatsbyjs.com/) o [next.js](https://nextjs.org/)
+
+En este caso utilizaremos el framework Next.js por el sencillo sistema de ruteo basado en `páginas` que incluye, el sistema de `fast refresh` que nos permite ver cambios en nuestro código de manera instantanea (similar a nodemon) sin perder el state de nuestra app y su extesibilidad para implementar features avanzadas (muchas de manera automática).
+
+
+### Creando un nuevo proyecto
+
+El único requisito es tener instalado una versión de node superior a la v10.13.
+
+Para crear un nuevo proyecto tan solo tenemos que ejecutar
+
+```bash
+$ npx create-next-app --use-npm
+```
+
+Luego, suponiendo que nombramos nuestro proyecto como `mi-proyecto` tan solo hay que navegar a la carpeta y ejecutarlo
+
+```bash
+$ cd mi-proyecto
+$ npm run dev
+```
+
+Finalmente, nuestra aplicación se encontrará corriendo en [http://localhost:3000](http://localhost:3000/)
